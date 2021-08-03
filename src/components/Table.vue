@@ -12,7 +12,7 @@
       </thead>
       <tbody>
         <tr v-for="(caseRecord, idx) in caseRecordDayByDay" :key="idx">
-          <td>{{ idx+1 }}</td>
+          <td>{{ idx + 1 }}</td>
           <template v-if="idx > 0">
             <td>
               {{
@@ -51,37 +51,24 @@ export default {
     };
   },
   methods: {
-    async setData(countrySlug) {
+    async setData() {
+      let countrySlug = this.$route.params.countrySlug;
+      console.log("mounted:", this.$route.params.countrySlug);
+
       let apiURL = `https://api.covid19api.com/dayone/country/${countrySlug}`;
       const response = await axios.get(apiURL);
       this.caseRecordDayByDay = response.data;
-      //   let index = -1;
-      //   response.data.forEach((element) => {
-      //     if (index === -1) {
-      //       this.caseRecordDayByDay.push(
-      //         this.makeDailyDataPair(1, element.Confirmed, element.Deaths)
-      //       );
-      //       index++;
-      //     } else {
-      //       this.caseRecordDayByDay.push(
-      //         this.makeDailyDataPair(
-      //           index + 2,
-      //           element.Confirmed -
-      //             response.data[index].Confirmed -
-      //             element.Recove,
-      //           element.Deaths - response.data[index].Deaths
-      //         )
-      //       );
-      //       index++;
-      //     }
-      //   });
     },
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
   },
-  mounted() {
+  async mounted() {
     eventBus.$on("updateTable", this.setData);
+    if(this.caseRecordDayByDay.length === 0 && this.$route.params.countrySlug != null){
+      console.log("if iiçi");
+      await this.setData();
+    }
   },
   beforeDestroy() {
     eventBus.$off("updateTable", this.setData);

@@ -1,19 +1,17 @@
 <template>
   <div id="app">
-    <Header />
-    <Table />
+    <Selector />
+    <router-view :key="$route.path"></router-view>
   </div>
 </template>
 
 <script>
-import Header from './components/Header.vue'
-import Table from "./components/Table.vue"
+import Selector from "./components/Selector.vue"
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    Header,
-    Table
+    Selector
   }
 }
 </script>

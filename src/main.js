@@ -9,7 +9,24 @@ import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 
 import VueRouter from 'vue-router'
 
+import Country from "./components/Country.vue"
+
 Vue.use(VueRouter)
+const  router = new VueRouter({
+    routes: [
+        {
+          path:"/",
+          name:"app",
+          component:Country
+        },
+        {
+          path:"/:countrySlug",
+          name:"country",
+          component:Country
+        }
+    ],
+    mode:"history"
+});
 // Make BootstrapVue available throughout your project
 Vue.use(BootstrapVue)
 // Optionally install the BootstrapVue icon components plugin
@@ -19,4 +36,5 @@ Vue.config.productionTip = false
 
 new Vue({
   render: h => h(App),
+  router: router
 }).$mount('#app')
