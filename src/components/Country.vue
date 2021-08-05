@@ -15,26 +15,6 @@ export default {
     Summary,
     Table,
   },
-  data() {
-    return {
-      isEditing:false
-    };
-  },
-  methods:{
-    preventNav(event) {
-      if (!this.isEditing) return
-      event.preventDefault()
-      event.returnValue = ""
-    },
-  },
-  beforeMount() {
-    window.addEventListener("beforeunload", event => {
-      if (!this.isEditing) return
-      event.preventDefault()
-      // Chrome requires returnValue to be set.
-      event.returnValue = ""
-    })
-  }
 };
 </script>
 

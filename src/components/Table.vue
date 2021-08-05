@@ -11,27 +11,27 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(caseRecord, idx) in caseRecordDayByDay" :key="idx">
+        <tr v-for="(dailyRecord, idx) in countryRecord" :key="idx">
           <td>{{ idx + 1 }}</td>
           <template v-if="idx > 0">
             <td>
               {{
                 numberWithCommas(
-                  caseRecord.Confirmed - caseRecordDayByDay[idx - 1].Confirmed
+                  dailyRecord.Confirmed - countryRecord[idx - 1].Confirmed
                 )
               }}
             </td>
             <td>
               {{
                 numberWithCommas(
-                  caseRecord.Deaths - caseRecordDayByDay[idx - 1].Deaths
+                  dailyRecord.Deaths - countryRecord[idx - 1].Deaths
                 )
               }}
             </td>
           </template>
           <template v-else>
-            <td>{{ numberWithCommas(caseRecord.Confirmed) }}</td>
-            <td>{{ numberWithCommas(caseRecord.Deaths) }}</td>
+            <td>{{ numberWithCommas(dailyRecord.Confirmed) }}</td>
+            <td>{{ numberWithCommas(dailyRecord.Deaths) }}</td>
           </template>
         </tr>
       </tbody>
@@ -40,38 +40,31 @@
 </template>
 
 <script>
-import { eventBus } from "../event";
-import axios from "axios";
+
+import {mapGetters} from "vuex"
 
 export default {
   name: "Table",
-  data() {
-    return {
-      caseRecordDayByDay: [],
-    };
+  computed:{
+    ...mapGetters(["dailyRecords"]),
+    countryRecord(){
+      const temp= this.dailyRecords.find(element => element.slug === this.$route.params.countrySlug);
+      if(temp){
+        return temp.record;
+      }
+      return [{Confirmed:0,Deaths:0}]
+    }
   },
   methods: {
-    async setData() {
-      let countrySlug = this.$route.params.countrySlug;
-      console.log("mounted:", this.$route.params.countrySlug);
 
-      let apiURL = `https://api.covid19api.com/dayone/country/${countrySlug}`;
-      const response = await axios.get(apiURL);
-      this.caseRecordDayByDay = response.data;
-    },
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
   },
-  async mounted() {
-    eventBus.$on("updateTable", this.setData);
-    if(this.caseRecordDayByDay.length === 0 && this.$route.params.countrySlug != null){
-      console.log("if iiçi");
-      await this.setData();
+  mounted() {
+    if (this.$route.params.countrySlug && this.dailyRecords.findIndex(element => element.slug === this.$route.params.countrySlug) === -1){
+      this.$store.dispatch("setDailyRecords",this.$route.params.countrySlug);
     }
-  },
-  beforeDestroy() {
-    eventBus.$off("updateTable", this.setData);
   },
 };
 </script>

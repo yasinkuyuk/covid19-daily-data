@@ -2,10 +2,14 @@
   <div class="mt-3">
     <b-card-group deck>
       <b-card border-variant="warning" header="Total Case" align="center">
-        <b-card-text>{{ numberWithCommas(cases) }}</b-card-text>
+        <b-card-text>{{
+          numberWithCommas(countrySummary.TotalConfirmed)
+        }}</b-card-text>
       </b-card>
       <b-card border-variant="warning" header="Total Death" align="center">
-        <b-card-text>{{ numberWithCommas(death) }}</b-card-text>
+        <b-card-text>{{
+          numberWithCommas(countrySummary.TotalDeaths)
+        }}</b-card-text>
       </b-card>
       <b-card
         border-variant="danger"
@@ -23,15 +27,16 @@
         header-text-variant="info"
         align="center"
       >
-        <b-card-text>{{ numberWithCommas(recovered) }}</b-card-text>
+        <b-card-text>{{
+          numberWithCommas(countrySummary.TotalRecovered)
+        }}</b-card-text>
       </b-card>
     </b-card-group>
   </div>
 </template>
 
 <script>
-import { eventBus } from "../event";
-import axios from "axios";
+import { mapGetters } from "vuex";
 
 export default {
   name: "Summary",
@@ -39,50 +44,39 @@ export default {
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
-    async setSummary() {
-      try {
-        const response = await axios.get("https://api.covid19api.com/summary");
-        let index = response.data.Countries.findIndex(
-          (country) => country.Slug == this.$route.params.countrySlug
-        );
-        this.cases = response.data.Countries[index].TotalConfirmed;
-        this.death = response.data.Countries[index].TotalDeaths;
-        this.recovered = response.data.Countries[index].TotalRecovered;
-      } catch (errorMessage) {
-        console.error(errorMessage);
-      }
-    },
-    async setGlobalSummary(){
-        const response = await axios.get("https://api.covid19api.com/summary");
-        this.cases = response.data.Global.TotalConfirmed;
-        this.death = response.data.Global.TotalDeaths;
-        this.recovered = response.data.Global.TotalRecovered;
-    },
-  },
-  data() {
-    return {
-      cases: 0,
-      recovered: 0,
-      death: 0,
-    };
   },
   computed: {
+    ...mapGetters(["countries", "totalGlobal"]),
+
     activeCase() {
-      return this.cases - this.recovered;
+      return (
+        this.countrySummary.TotalConfirmed - this.countrySummary.TotalRecovered
+      );
     },
-  },
-  async mounted() { 
-    eventBus.$on("setSummaryDatas", this.setSummary);
-    if(this.$route.params.countrySlug == null){
-        await this.setGlobalSummary();
-        
-    }
-    if(this.cases == 0){
-        await this.setSummary();
-    }
-  },
-  beforeDestroy() {
-    eventBus.$off("setSummaryDatas", this.setSummary);
+    countrySummary() {
+      if (this.$route.params.countrySlug != null) {
+        let country = this.countries.find(
+          (element) => element.Slug === this.$route.params.countrySlug
+        );
+        if (country) {
+          return country;
+        }
+        return {
+            TotalConfirmed:0,
+            TotalDeaths:0,
+            TotalRecovered:0
+        };
+      } else {
+        if (this.totalGlobal.TotalConfirmed != undefined) {
+          return this.totalGlobal;
+        }
+        return {
+            TotalConfirmed:0,
+            TotalDeaths:0,
+            TotalRecovered:0
+        };
+      }
+    },
   },
 };
 </script>

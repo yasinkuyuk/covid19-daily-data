@@ -13,27 +13,17 @@
 </template>
 
 <script>
-import axios from "axios";
+import { mapGetters } from 'vuex';
 import { eventBus } from "../event";
 
 export default {
   name: "Header",
   data() {
     return {
-      countries: [],
       selectedCountry: null,
     };
   },
   methods: {
-    async getCountry() {
-      try {
-        const response = await axios.get("https://api.covid19api.com/summary");
-        this.countries = response.data.Countries;
-        console.log("countries:",this.countries); 
-      } catch (errorMessage) {
-        console.error(errorMessage);
-      }
-    },
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
@@ -48,14 +38,17 @@ export default {
       eventBus.$emit("updateTable");
     },
   },
-  async mounted() {
-    await this.getCountry();
+  computed:{
+    ...mapGetters([
+      "countries"
+    ])
+  },
+  mounted() {
     this.$set(this,"selectedCountry",this.$route.params.countrySlug);
   },
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h3 {
   margin: 40px 0 0;
